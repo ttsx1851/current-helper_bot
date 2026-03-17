@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Курс валют</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #0f172a;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    text-align: center;
+    background: #1e293b;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+h1 {
+    margin-bottom: 20px;
+}
+
+select {
+    padding: 12px;
+    border-radius: 10px;
+    border: none;
+    width: 200px;
+    margin-bottom: 15px;
+}
+
+button {
+    padding: 12px;
+    width: 200px;
+    border: none;
+    border-radius: 10px;
+    background: #3b82f6;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2563eb;
+}
+
+.result {
+    margin-top: 20px;
+    font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h1>💱 Курс валют</h1>
+
+    <select id="currency">
+        <option value="UZS">🇺🇿 UZS</option>
+        <option value="RUB">🇷🇺 RUB</option>
+        <option value="EUR">🇪🇺 EUR</option>
+        <option value="GBP">🇬🇧 GBP</option>
+    </select>
+
+    <br>
+
+    <button onclick="getRate()">Показать</button>
+
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+async function getRate() {
+    let currency = document.getElementById("currency").value;
+
+    let res = await fetch("https://open.er-api.com/v6/latest/USD");
+    let data = await res.json();
+
+    let rate = data.rates[currency];
+
+    document.getElementById("result").innerText =
+        "1 USD = " + rate + " " + currency;
+}
+</script>
+
+</body>
+</html>
