@@ -11,39 +11,49 @@ body {
     background: #0f172a;
     color: white;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
     align-items: center;
+    justify-content: center;
     height: 100vh;
 }
 
-.container {
-    text-align: center;
-    background: #1e293b;
-    padding: 40px;
-    border-radius: 20px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+h1 {
+    font-size: 40px;
+    margin-bottom: 40px;
 }
 
-h1 {
-    margin-bottom: 20px;
+.search-box {
+    background: #1e293b;
+    padding: 15px;
+    border-radius: 30px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+input, select {
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    outline: none;
+}
+
+input {
+    width: 100px;
+    text-align: center;
 }
 
 select {
-    padding: 12px;
-    border-radius: 10px;
-    border: none;
-    width: 200px;
-    margin-bottom: 15px;
+    background: #0f172a;
+    color: white;
 }
 
 button {
-    padding: 12px;
-    width: 200px;
+    padding: 10px 20px;
     border: none;
-    border-radius: 10px;
+    border-radius: 20px;
     background: #3b82f6;
     color: white;
-    font-size: 16px;
     cursor: pointer;
 }
 
@@ -52,42 +62,52 @@ button:hover {
 }
 
 .result {
-    margin-top: 20px;
-    font-size: 20px;
+    margin-top: 30px;
+    font-size: 24px;
 }
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h1>💱 Курс валют</h1>
+<h1>💱 Конвертер валют</h1>
 
-    <select id="currency">
-        <option value="UZS">🇺🇿 UZS</option>
-        <option value="RUB">🇷🇺 RUB</option>
-        <option value="EUR">🇪🇺 EUR</option>
-        <option value="GBP">🇬🇧 GBP</option>
+<div class="search-box">
+    <input type="number" id="amount" value="1">
+
+    <select id="from">
+        <option value="USD">USD</option>
+        <option value="UZS">UZS</option>
+        <option value="RUB">RUB</option>
     </select>
 
-    <br>
+    ➡️
 
-    <button onclick="getRate()">Показать</button>
+    <select id="to">
+        <option value="UZS">UZS</option>
+        <option value="USD">USD</option>
+        <option value="RUB">RUB</option>
+    </select>
 
-    <div class="result" id="result"></div>
+    <button onclick="convert()">OK</button>
 </div>
 
-<script>
-async function getRate() {
-    let currency = document.getElementById("currency").value;
+<div class="result" id="result"></div>
 
-    let res = await fetch("https://open.er-api.com/v6/latest/USD");
+<script>
+async function convert() {
+    let amount = document.getElementById("amount").value;
+    let from = document.getElementById("from").value;
+    let to = document.getElementById("to").value;
+
+    let res = await fetch("https://open.er-api.com/v6/latest/" + from);
     let data = await res.json();
 
-    let rate = data.rates[currency];
+    let rate = data.rates[to];
+    let result = (amount * rate).toFixed(2);
 
     document.getElementById("result").innerText =
-        "1 USD = " + rate + " " + currency;
+        amount + " " + from + " = " + result + " " + to;
 }
 </script>
 
