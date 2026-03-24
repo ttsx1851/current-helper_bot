@@ -59,7 +59,7 @@ canvas {
     margin-top: 20px;
     width: 100% !important;
     max-width: 400px;
-    height: auto !important;
+    height: 200px !important;
 }
 </style>
 </head>
@@ -68,7 +68,7 @@ canvas {
 
 <h1>💱 Конвертер валют</h1>
 
-<input class="search" id="search" placeholder="Поиск валюты..." oninput="filterCurrencies()">
+<input class="search" id="search" placeholder="Поиск валюты...">
 
 <div class="row">
     <input type="number" id="amount" value="1">
@@ -85,7 +85,9 @@ canvas {
 <script>
 let allRates = {};
 let currencies = [];
+let chart;
 
+// ⭐ Названия валют (расширил немного)
 const currencyNames = {
     USD: "Доллар США",
     EUR: "Евро",
@@ -95,21 +97,31 @@ const currencyNames = {
     GBP: "Фунт стерлингов",
     KZT: "Казахстанский тенге",
     TRY: "Турецкая лира",
-    CNY: "Китайский юань"
+    CNY: "Китайский юань",
+    AMD: "Армянский драм",
+    ALL: "Албанский лек",
+    AED: "Дирхам ОАЭ",
+    JPY: "Японская иена",
+    KRW: "Южнокорейская вона"
 };
 
+// 🚀 Загрузка валют
 async function loadCurrencies() {
     let res = await fetch("https://open.er-api.com/v6/latest/USD");
     let data = await res.json();
+
     allRates = data.rates;
     currencies = Object.keys(allRates);
+
     updateSelects(currencies);
 
     document.getElementById("from").value = "USD";
     document.getElementById("to").value = "UZS";
+
     convert();
 }
 
+// 📋 Обновление списков
 function updateSelects(list) {
     let from = document.getElementById("from");
     let to = document.getElementById("to");
@@ -136,14 +148,24 @@ function updateSelects(list) {
     });
 }
 
-function filterCurrencies() {
-    let query = document.getElementById("search").value.toUpperCase();
-    let filtered = currencies.filter(c => c.includes(query));
+// 🔍 Поиск (исправленный)
+document.getElementById("search").addEventListener("input", function () {
+    let query = this.value.toLowerCase();
+
+    let filtered = currencies.filter(c => {
+        let name = (currencyNames[c] || "").toLowerCase();
+        return c.toLowerCase().includes(query) || name.includes(query);
+    });
+
     updateSelects(filtered);
-}
+});
 
-document.addEventListener("input", convert);
+// ⚡ Только нужные события (фикс лагов)
+document.getElementById("amount").addEventListener("input", convert);
+document.getElementById("from").addEventListener("change", convert);
+document.getElementById("to").addEventListener("change", convert);
 
+// 💱 Конвертация
 async function convert() {
     let amount = document.getElementById("amount").value;
     let from = document.getElementById("from").value;
@@ -163,20 +185,23 @@ async function convert() {
     drawChart(rate);
 }
 
-let chart;
-
+// 📈 График (оптимизирован)
 function drawChart(rate) {
     let ctx = document.getElementById("chart").getContext("2d");
 
     let data = [
-        rate * 0.9,
         rate * 0.95,
+        rate * 0.97,
         rate,
-        rate * 1.02,
-        rate * 1.05
+        rate * 1.01,
+        rate * 1.03
     ];
 
-    if (chart) chart.destroy();
+    if (chart) {
+        chart.data.datasets[0].data = data;
+        chart.update();
+        return;
+    }
 
     chart = new Chart(ctx, {
         type: 'line',
