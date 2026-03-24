@@ -87,25 +87,24 @@ let allRates = {};
 let currencies = [];
 let chart;
 
-// ⭐ Названия валют (расширил немного)
+// названия (расширил)
 const currencyNames = {
     USD: "Доллар США",
     EUR: "Евро",
     RUB: "Российский рубль",
     UZS: "Узбекский сум",
-    AZN: "Азербайджанский манат",
+    AMD: "Армянский драм",
+    ALL: "Албанский лек",
+    AED: "Дирхам ОАЭ",
     GBP: "Фунт стерлингов",
     KZT: "Казахстанский тенге",
     TRY: "Турецкая лира",
     CNY: "Китайский юань",
-    AMD: "Армянский драм",
-    ALL: "Албанский лек",
-    AED: "Дирхам ОАЭ",
     JPY: "Японская иена",
     KRW: "Южнокорейская вона"
 };
 
-// 🚀 Загрузка валют
+// загрузка
 async function loadCurrencies() {
     let res = await fetch("https://open.er-api.com/v6/latest/USD");
     let data = await res.json();
@@ -115,17 +114,14 @@ async function loadCurrencies() {
 
     updateSelects(currencies);
 
-    document.getElementById("from").value = "USD";
-    document.getElementById("to").value = "UZS";
+    from.value = "USD";
+    to.value = "UZS";
 
     convert();
 }
 
-// 📋 Обновление списков
+// обновление списков
 function updateSelects(list) {
-    let from = document.getElementById("from");
-    let to = document.getElementById("to");
-
     from.innerHTML = "";
     to.innerHTML = "";
 
@@ -142,15 +138,15 @@ function updateSelects(list) {
     list.forEach(cur => {
         if (!favorites.includes(cur)) {
             let name = currencyNames[cur] || cur;
-            from.add(new Option(name + " | " + cur, cur));
-            to.add(new Option(name + " | " + cur, cur));
+            from.add(new Option(name === cur ? cur : name + " | " + cur, cur));
+            to.add(new Option(name === cur ? cur : name + " | " + cur, cur));
         }
     });
 }
 
-// 🔍 Поиск (исправленный)
-document.getElementById("search").addEventListener("input", function () {
-    let query = this.value.toLowerCase();
+// поиск (ПОФИКШЕН)
+search.addEventListener("input", () => {
+    let query = search.value.toLowerCase();
 
     let filtered = currencies.filter(c => {
         let name = (currencyNames[c] || "").toLowerCase();
@@ -160,48 +156,40 @@ document.getElementById("search").addEventListener("input", function () {
     updateSelects(filtered);
 });
 
-// ⚡ Только нужные события (фикс лагов)
-document.getElementById("amount").addEventListener("input", convert);
-document.getElementById("from").addEventListener("change", convert);
-document.getElementById("to").addEventListener("change", convert);
+// обработчики (ПОФИКШЕНЫ)
+amount.addEventListener("input", convert);
+from.addEventListener("change", convert);
+to.addEventListener("change", convert);
 
-// 💱 Конвертация
+// конвертация
 async function convert() {
-    let amount = document.getElementById("amount").value;
-    let from = document.getElementById("from").value;
-    let to = document.getElementById("to").value;
+    let value = amount.value;
+    if (!value) return;
 
-    if (!amount) return;
-
-    let res = await fetch("https://open.er-api.com/v6/latest/" + from);
+    let res = await fetch("https://open.er-api.com/v6/latest/" + from.value);
     let data = await res.json();
 
-    let rate = data.rates[to];
-    let result = (amount * rate).toFixed(2);
+    let rate = data.rates[to.value];
+    let result = (value * rate).toFixed(2);
 
-    document.getElementById("result").innerText =
-        amount + " " + from + " = " + result + " " + to;
+    resultBlock.innerText = `${value} ${from.value} = ${result} ${to.value}`;
 
     drawChart(rate);
 }
 
-// 📈 График (оптимизирован)
+// график (ПОФИКШЕН FPS)
 function drawChart(rate) {
     let ctx = document.getElementById("chart").getContext("2d");
 
     let data = [
         rate * 0.95,
-        rate * 0.97,
+        rate * 0.98,
         rate,
         rate * 1.01,
         rate * 1.03
     ];
 
-    if (chart) {
-        chart.data.datasets[0].data = data;
-        chart.update();
-        return;
-    }
+    if (chart) chart.destroy();
 
     chart = new Chart(ctx, {
         type: 'line',
@@ -210,16 +198,22 @@ function drawChart(rate) {
             datasets: [{
                 label: 'Курс',
                 data: data,
-                borderColor: '#3b82f6',
-                fill: false
+                borderColor: '#3b82f6'
             }]
         },
         options: {
             responsive: true,
-            maintainAspectRatio: false
+            animation: false
         }
     });
 }
+
+// фиксим ссылки на элементы
+const amount = document.getElementById("amount");
+const from = document.getElementById("from");
+const to = document.getElementById("to");
+const resultBlock = document.getElementById("result");
+const search = document.getElementById("search");
 
 loadCurrencies();
 </script>
