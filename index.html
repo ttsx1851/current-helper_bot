@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Конвертер валют</title>
-
 <style>
 body {
     margin: 0;
@@ -16,23 +15,19 @@ body {
     justify-content: center;
     height: 100vh;
 }
-
 h1 {
     font-size: 40px;
     margin-bottom: 20px;
 }
-
 input, select {
     padding: 10px;
     border-radius: 10px;
     border: none;
     margin: 5px;
 }
-
 .search {
     width: 220px;
 }
-
 .row {
     display: flex;
     align-items: center;
@@ -41,37 +36,29 @@ input, select {
     padding: 15px;
     border-radius: 20px;
 }
-
 .result {
     margin-top: 20px;
     font-size: 22px;
 }
-
 canvas {
     margin-top: 20px;
 }
 </style>
 </head>
-
 <body>
 
 <h1>💱 Конвертер валют</h1>
 
-<!-- ⭐ Поиск -->
 <input class="search" id="search" placeholder="Поиск валюты..." oninput="filterCurrencies()">
 
 <div class="row">
     <input type="number" id="amount" value="1">
-
     <select id="from"></select>
-
     ➡️
-
     <select id="to"></select>
 </div>
 
 <div class="result" id="result"></div>
-
 <canvas id="chart" width="300" height="150"></canvas>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -80,18 +67,28 @@ canvas {
 let allRates = {};
 let currencies = [];
 
+// ⭐ Названия валют
+const currencyNames = {
+    USD: "Доллар США",
+    EUR: "Евро",
+    RUB: "Российский рубль",
+    UZS: "Узбекский сум",
+    AZN: "Азербайджанский манат",
+    GBP: "Фунт стерлингов",
+    KZT: "Казахстанский тенге",
+    TRY: "Турецкая лира",
+    CNY: "Китайский юань"
+};
+
 async function loadCurrencies() {
     let res = await fetch("https://open.er-api.com/v6/latest/USD");
     let data = await res.json();
-
     allRates = data.rates;
     currencies = Object.keys(allRates);
-
     updateSelects(currencies);
 
     document.getElementById("from").value = "USD";
     document.getElementById("to").value = "UZS";
-
     convert();
 }
 
@@ -103,33 +100,33 @@ function updateSelects(list) {
     from.innerHTML = "";
     to.innerHTML = "";
 
-    // ⭐ избранные сверху
     let favorites = ["USD", "EUR", "RUB", "UZS"];
 
     favorites.forEach(cur => {
         if (list.includes(cur)) {
-            from.add(new Option("⭐ " + cur, cur));
-            to.add(new Option("⭐ " + cur, cur));
+            let name = currencyNames[cur] || cur;
+            from.add(new Option("⭐ " + name + " | " + cur, cur));
+            to.add(new Option("⭐ " + name + " | " + cur, cur));
         }
     });
 
     list.forEach(cur => {
         if (!favorites.includes(cur)) {
-            from.add(new Option(cur, cur));
-            to.add(new Option(cur, cur));
+            let name = currencyNames[cur] || cur;
+            from.add(new Option(name + " | " + cur, cur));
+            to.add(new Option(name + " | " + cur, cur));
         }
     });
 }
 
-// 🔍 Поиск валют
+// 🔍 Поиск
 function filterCurrencies() {
     let query = document.getElementById("search").value.toUpperCase();
-
     let filtered = currencies.filter(c => c.includes(query));
     updateSelects(filtered);
 }
 
-// ⚡ Авто-конвертация
+// ⚡ Конвертация
 document.addEventListener("input", convert);
 
 async function convert() {
@@ -151,7 +148,7 @@ async function convert() {
     drawChart(rate);
 }
 
-// 📈 Простой график (фейковый тренд)
+// 📈 График
 let chart;
 
 function drawChart(rate) {
